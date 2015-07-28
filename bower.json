@@ -1,0 +1,13 @@
+{
+  "name": "PresentationDeveloperExam",
+  "version": "0.0.0",
+  "description": "Para el examen de presetation developer",
+  "main": "index.html",
+  "authors": [
+    "Matias Mendez"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "jquery": "~2.1.4"
+  }
+}
