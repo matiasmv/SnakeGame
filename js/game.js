@@ -1,25 +1,103 @@
 
 var Snake = function () {
+
+  var directions = {
+    left:1,
+    top: 2,
+    right:3,
+    bottom:4
+  };
+  var blockCount = 0;
   var self = this;
   this.board = null;
   this.body = [];
-  this.speed = 10;
+  this.speed = 3;
   this.lastDirection = null;
+  this.lastHeadDirection = null;
+
+  var temp = 0; //TODO: remove this.
 
   function init(config){
       this.board = config.board;
       this.addBlock();
+      this.addBlock();
+      this.addBlock();
       wireup();
       setInterval(this.move, 100);
-      setInterval(this.addBlock, 500);
+
   }
 
   function addSnakeBlock(){
+
     console.log("New block was added to snake!!");
 
-    var snakeBlock = $("<div>").addClass("snakeBlock");
-    self.body.push(snakeBlock);
+    var snakeBlock = $("<div>").attr({id:blockCount}).addClass("snakeBlock");
+    blockCount++;
+
     self.board.append(snakeBlock);
+
+    setInitialPostition(snakeBlock);
+
+    self.body.push(snakeBlock);
+  }
+
+  function setInitialPostition(block){
+      var tail;
+      var tailTop;
+      var tailLeft;
+      var blockTop;
+      var blockLeft;
+      var direction;
+
+      if(self.body.length > 0){
+
+        tail = getTail();
+        tailTop = tail.offset().top;
+        tailLeft = tail.offset().left;
+
+        direction = getDirection(tailTop, tailLeft);
+
+        blockTop = tailTop + (-1) * getTopMovement(direction, tail.outerHeight(true));
+        blockLeft = tailLeft + (-1) * getLeftMovement(direction, tail.outerWidth(true));
+
+        setPosition(block, blockTop, blockLeft);
+
+      }
+  }
+
+  function setPosition(element, top, left){
+
+    element.offset({ top: top, left: left });
+
+  }
+
+  function getDirection(tailTop, tailLeft){
+    var direction = self.lastDirection || directions.bottom;
+
+    if(self.body.length > 1){
+
+      var prevToTail =  getPrevToTail();
+      var prevToTailTop = prevToTail.offset().top;
+      var prevToTailLeft = prevToTail.offset().left;
+
+      if(tailTop === prevToTailTop){
+         direction = prevToTailLeft > tailLeft ? directions.right : directions.left;
+      }
+      else{
+        direction = prevToTailTop > tailTop ? directions.bottom : directions.top;
+      }
+
+    }
+
+    return direction;
+  }
+
+  function getTail(){
+    return self.body[self.body.length -1];
+  }
+
+  function getPrevToTail(){
+    return self.body[self.body.length -2];
   }
 
   function drawSnake(board){
@@ -39,24 +117,52 @@ var Snake = function () {
     var head = self.body[0];
     var top = head.offset().top;
     var left = head.offset().left;
+    var topMovement;
+    var leftMovement;
 
-    head.offset({
-      top: top + (self.lastDirection == 2 ? -1 : 1) * (self.lastDirection % 2 == 0 ? self.speed : 0),
-      left: left + (self.lastDirection == 1 ? -1 : 1) * (self.lastDirection % 2 != 0 ? self.speed : 0)
-    });
+    var topIncrement = self.speed;
+    var leftIncrement = self.speed;
+
+    if(self.lastDirection !== self.lastHeadDirection && self.body.length > 1){
+        topIncrement = head.outerHeight(true);
+        leftIncrement = head.outerWidth(true);
+    }
+
+    topMovement = top + getTopMovement(self.lastDirection, topIncrement);
+    leftMovement = left + getLeftMovement(self.lastDirection,leftIncrement);
+    setPosition(head, topMovement, leftMovement);
 
     //move body
     for (var i = 1; i < self.body.length; i++) {
         var part = self.body[i];
-        var prevPartTop = part.offset().top;
-        var prevPartLeft = head.offset().left;
+        var partTop = part.offset().top;
+        var partLeft = part.offset().left;
 
-        part.css({ top: top, left: left})
+        var direction = getDirection(partTop, partLeft);
+
+
+
+        setPosition(part, top, left);
 
         top = prevPartTop;
         left = prevPartLeft;
     }
+
+    self.lastHeadDirection = lastDirection;
   }
+
+  function directionSign(direction){
+    return (direction == 2 || direction == 1) ? -1 : 1;
+  }
+
+  function getTopMovement(direction, increment){
+      return directionSign(direction) * (direction % 2 == 0 ? increment : 0)
+  }
+
+  function getLeftMovement(direction, increment){
+      return directionSign(direction) * (direction % 2 != 0 ? increment : 0)
+  }
+
 
   function wireup(){
     $("body").keydown(keydownFunction)
