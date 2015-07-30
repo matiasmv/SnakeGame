@@ -1,5 +1,5 @@
 
-var Snake = function () {
+function Snake() {
 
   var directions = {
     left:1,
@@ -7,24 +7,90 @@ var Snake = function () {
     right:3,
     bottom:4
   };
+
   var blockCount = 0;
   var self = this;
+  this.initialBodyLength;
   this.board = null;
   this.body = [];
-  this.speed = 3;
   this.lastDirection = null;
   this.lastHeadDirection = null;
 
   var temp = 0; //TODO: remove this.
 
+  function isSnakeColitionWith(elementTop, elementLeft, elementHeight, elementWidth){
+    var colition;
+    var head = getHead();
+    var headTop = head.offset().top;
+    var headLeft = head.offset().left;
+    var width = head.outerWidth(true);
+    var height = head.outerHeight(true);
+
+    colition =  Math.abs(headTop - elementTop) < Math.max(height, elementHeight) &&
+                Math.abs(headLeft - elementLeft) < Math.max(width, elementWidth);
+
+    return colition;
+  }
+
+  function checkColitionsItself(){
+    var colition = false;
+    var head = getHead();
+    var headTop = head.offset().top;
+    var headLeft = head.offset().left;
+    var width = head.outerWidth(true);
+    var height = head.outerHeight(true);
+    var part;
+    var partTop;
+    var partLeft;
+    var i = 1;
+
+    while(!colition && i <  self.body.length){
+      part = self.body[i];
+      partTop = part.offset().top;
+      partLeft = part.offset().left;
+
+      colition =  (headTop <= partTop &&
+                  partTop < headTop + height &&
+                  headLeft <= partLeft &&
+                  partLeft < headLeft + width)
+      i++;
+    }
+
+    if(colition && self.colitionItselfCallback ){
+      self.colitionItselfCallback();
+    }
+
+  }
+
   function init(config){
       this.board = config.board;
-      this.addBlock();
-      this.addBlock();
-      this.addBlock();
+      this.colitionItselfCallback = config.colitionItselfCallback;
+      this.initialTop = config.initialTop;
+      this.initialLeft = config.initialLeft;
       wireup();
-      setInterval(this.move, 100);
+  }
 
+  function start(){
+     restart();
+  }
+
+  function deleteBody(){
+      for (var i = 0; i < self.body.length; i++) {
+        var part = self.body[i];
+        part.remove();
+      }
+      self.body = [];
+  }
+
+  function restart(){
+     self.initialBodyLength = self.initialBodyLength || 3;
+     self.lastDirection = null;
+
+     deleteBody();
+
+     for (var i = 0; i < self.initialBodyLength; i++) {
+        self.grow();
+     }
   }
 
   function addSnakeBlock(){
@@ -49,6 +115,8 @@ var Snake = function () {
       var blockLeft;
       var direction;
 
+      setPosition(block, self.initialTop, self.initialLeft);
+
       if(self.body.length > 0){
 
         tail = getTail();
@@ -71,6 +139,22 @@ var Snake = function () {
 
   }
 
+  function getDirection(e1Top, e1Left, e2Top, e2Left){
+    var direction = null;
+
+    if(self.body.length > 1){
+
+      if(e1Top === e2Top){
+         direction = e1Left > e2Left ? directions.right : directions.left;
+      }
+      else if (e1Left === e2Left){
+        direction = e1Top > e2Top ? directions.bottom : directions.top;
+      }
+    }
+
+    return direction;
+  }
+
   function getDirection(tailTop, tailLeft){
     var direction = self.lastDirection || directions.bottom;
 
@@ -83,13 +167,16 @@ var Snake = function () {
       if(tailTop === prevToTailTop){
          direction = prevToTailLeft > tailLeft ? directions.right : directions.left;
       }
-      else{
+      else if (prevToTailLeft === tailLeft){
         direction = prevToTailTop > tailTop ? directions.bottom : directions.top;
       }
-
     }
 
     return direction;
+  }
+
+  function getHead(){
+    return self.body[0];
   }
 
   function getTail(){
@@ -120,35 +207,44 @@ var Snake = function () {
     var topMovement;
     var leftMovement;
 
-    var topIncrement = self.speed;
-    var leftIncrement = self.speed;
+    var topIncrement = head.outerHeight(true);
+    var leftIncrement = head.outerWidth(true);
 
-    if(self.lastDirection !== self.lastHeadDirection && self.body.length > 1){
-        topIncrement = head.outerHeight(true);
-        leftIncrement = head.outerWidth(true);
+    self.lastDirection = Math.abs(self.lastDirection - self.lastHeadDirection) == 2 ? self.lastHeadDirection : self.lastDirection;
+
+    if(isDirectionChanged()){
+      var prevElement = self.body[self.body.length -1];
+
+      topIncrement = prevElement.offset().top +  getTopMovement(self.lastDirection, topIncrement);
+      leftIncrement = prevElement.offset().left + getLeftMovement(self.lastDirection, leftIncrement);
+      setPosition(head, topMovement, leftMovement);
+      self.lastHeadDirection = self.lastDirection;
+    }
+    else{
+        topMovement = top + getTopMovement(self.lastDirection, topIncrement);
+        leftMovement = left + getLeftMovement(self.lastDirection, leftIncrement);
+
+        setPosition(head, topMovement, leftMovement);
+
+        //Move body
+        for (var i = 1; i < self.body.length; i++) {
+            var part = self.body[i];
+            var partTop = part.offset().top;
+            var partLeft = part.offset().left;
+
+            setPosition(part, top, left);
+
+            top = partTop;
+            left = partLeft;
+        }
     }
 
-    topMovement = top + getTopMovement(self.lastDirection, topIncrement);
-    leftMovement = left + getLeftMovement(self.lastDirection,leftIncrement);
-    setPosition(head, topMovement, leftMovement);
+    checkColitionsItself();
 
-    //move body
-    for (var i = 1; i < self.body.length; i++) {
-        var part = self.body[i];
-        var partTop = part.offset().top;
-        var partLeft = part.offset().left;
+  }
 
-        var direction = getDirection(partTop, partLeft);
-
-
-
-        setPosition(part, top, left);
-
-        top = prevPartTop;
-        left = prevPartLeft;
-    }
-
-    self.lastHeadDirection = lastDirection;
+  function isDirectionChanged(){
+    return self.lastDirection !== self.lastHeadDirection && self.body.length > 1;
   }
 
   function directionSign(direction){
@@ -162,7 +258,6 @@ var Snake = function () {
   function getLeftMovement(direction, increment){
       return directionSign(direction) * (direction % 2 != 0 ? increment : 0)
   }
-
 
   function wireup(){
     $("body").keydown(keydownFunction)
@@ -179,45 +274,130 @@ var Snake = function () {
       }
   }
 
+  //public
   this.init = init;
-  this.addBlock = addSnakeBlock;
+  this.start = start;
+  this.grow = addSnakeBlock;
   this.draw = drawSnake;
   this.move = moveSnake;
+  this.colitionItselfCallback = function(){};
+  this.isSnakeColitionWith = isSnakeColitionWith;
 
 };
 
+function Fruit(board, boardSize){
+
+    this.board = board;
+    this.body = $("<div>").addClass("fruit");
+    this.top = getRandomValue(boardSize);
+    this.left = getRandomValue(boardSize);
+    this.width = this.body.outerWidth(true);
+    this.height = this.body.outerHeight(true);
+    this.remove = remove;
+    this.draw = draw;
+
+    function draw(){
+      board.append(this.body);
+      this.body.offset({
+        top: this.top,
+        left: this.left
+      });
+    }
+
+    function remove(){
+        this.body.remove();
+    }
+
+    function getRandomValue(boardSize){
+       return Math.floor(Math.random() * boardSize) + 1
+    }
+}
 
 
 var game = (function(){
 
   var selectors={
     board: '.board',
+    gameOverMessage: ".gameOverMessage",
+    newGameButton: "#NewGameButton",
   };
 
+  var speed = 100;
   var snake = new Snake();
   var board = $(selectors.board);
+  var boardSize = board.outerWidth(true);
+  var gameLoop;
+  var lastFruit = null;
 
 
   function init(config){
-    config.board = board;
     console.log("Starting game");
+
+    config.board = board;
+    config.colitionItselfCallback = endGame;
     snake.init(config);
+
+    $(selectors.newGameButton).click(startNewGame);
   }
 
-
-
-  function draw(){
-    console.log("game draw was called");
-     //cleanBoard();
-     snake.draw(board);
+  function endGame(){
+    showGameOverMensage();
+    stopGameLoop();
   }
+
+  function startNewGame(){
+      lastFruit = new Fruit(board, boardSize);
+      lastFruit.draw();
+      hideGameOverMensage();
+      startGameLoop();
+  }
+
+  function hideGameOverMensage(){
+      var  gameOverMessage = $(selectors.gameOverMessage);
+      gameOverMessage.css({display: "none"})
+  }
+
+  function showGameOverMensage(){
+      var  gameOverMessage = $(selectors.gameOverMessage);
+      gameOverMessage.css({display: "block"})
+  }
+
+  function stopGameLoop(){
+    clearInterval(gameLoop);
+  }
+
+  function startGameLoop(){
+     snake.start();
+
+     if(gameLoop){
+       stopGameLoop();
+     }
+
+     gameLoop = setInterval(function(){
+
+       snake.move();
+
+       if(snake.isSnakeColitionWith(lastFruit.top, lastFruit.left, lastFruit.height, lastFruit.width)){
+          lastFruit.remove();
+          lastFruit = new Fruit(board, boardSize);
+          lastFruit.draw();
+          snake.grow();
+       }
+
+     }, speed);
+   }
 
   return {
-    init: init
+    init: init,
+    startNewGame: startNewGame,
   };
 
 })();
 
 $(document).ready(function(){
-  game.init({});
+  game.init({
+    initialTop: 300,
+    initialLeft: 200,
+
+  });
 });
