@@ -1,39 +1,214 @@
 .board{
   position: relative;
   width: 800px;
-  height: 800px;
+  height: 600px;
   border-style: solid;
   border-width: 4px;
+  background-image: url("../asserts/ground.jpg");
 }
 
-
-.snakeBlock{
+.snakeBody{
   position: absolute;
-  width: 30px;
-  height: 30px;
-  top: 100px;
-  left: 60px;
+  background-color: green;
+  border-style: solid;
+  border-width: 1px;
+  width: 40px;
+  height: 40px;
+  -moz-border-radius:50%;
+	-webkit-border-radius:50%;
+	border-radius:50%;
+  z-index: 20;
+  top:-40%;
+  left:-30%;
+}
+
+.snakeTail{
+  position: absolute;
+  background-image: url(../asserts/snakeTail.png);
+  background-size: 40px 60px;
+  background-repeat: no-repeat;
+  width: 40px;
+  height: 60px;
+  z-index: 10;
+  top:-40%;
+  left:-40%;
+}
+
+.snakeHead{
+  position: absolute;
+  background-image: url(../asserts/snakeHead.png);
+  background-repeat: no-repeat;
+  background-size: 60px 60px;
+  width: 60px;
+  height: 60px;
+  z-index: 50;
+  top:-40%;
+  left:-50%;
+}
+
+.snakeBlockNoGraphics{
+  position: absolute;
   background-color: green;
   border-style: solid;
   border-width: 1px;
 }
 
-.fruit{
+.snakeBlock{
   position: absolute;
+  overflow: visible;
   width: 30px;
   height: 30px;
+  top: 100px;
+  left: 60px;
+}
+
+.fruitNoGraphics{
   background-color: red;
   border-style: solid;
   border-width: 1px;
 }
 
+.fruitBlock{
+  position: absolute;
+  width: 50px;
+  height: 50px;
+}
+
+@-webkit-keyframes fruitAnimation {
+  0%   {
+      transform: scale(1.0);
+
+  }
+  50%  {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1.0);
+  }
+}
+
+/* Standard syntax */
+@keyframes fruitAnimation {
+  0%   {
+      transform: scale(1.0);
+
+  }
+  50%  {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1.0);
+  }
+}
+
+.fruit1{
+  position: absolute;
+  background-image: url(../asserts/fruit1.png);
+  background-repeat: no-repeat;
+  background-size: 40px 40px;
+  width: 40px;
+  height: 40px;
+  z-index: 10;
+  animation: fruitAnimation 1s infinite;
+}
+
+.fruit2{
+  position: absolute;
+  background-image: url(../asserts/fruit2.png);
+  background-repeat: no-repeat;
+  background-size: 40px 40px;
+  width: 40px;
+  height: 40px;
+  z-index: 10;
+  animation: fruitAnimation 1s infinite;
+}
+
+.fruit3{
+  position: absolute;
+  background-image: url(../asserts/fruit3.png);
+  background-repeat: no-repeat;
+  background-size: 30px 50px;
+  width: 30px;
+  height: 50px;
+  z-index: 10;
+  animation: fruitAnimation 1s infinite;
+}
+
+.fruit4{
+  position: absolute;
+  background-image: url(../asserts/fruit4.png);
+  background-repeat: no-repeat;
+  background-size: 40px 40px;
+  width: 40px;
+  height: 40px;
+  z-index: 10;
+  animation: fruitAnimation 1s infinite;
+}
+
+
+.alignCenter{
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  margin: auto;
+}
+
 .gameOverMessage{
-  background-color: Black;
   border-style: solid;
   border-width: 3px;
   position: absolute;
-  width: 200px;
-  height: 100px;
-  margin: auto;
+  width: 260px;
+  height: 250px;
   display: none;
+  z-index: 9999;
+  background-color: white;
+  text-align: center;
+}
+
+.gamePanel{
+  margin:10px;
+}
+
+.gamePanel button{
+	-moz-box-shadow: 0px 10px 14px -7px #3e7327;
+	-webkit-box-shadow: 0px 10px 14px -7px #3e7327;
+	box-shadow: 0px 10px 14px -7px #3e7327;
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #77b55a), color-stop(1, #72b352));
+	background:-moz-linear-gradient(top, #77b55a 5%, #72b352 100%);
+	background:-webkit-linear-gradient(top, #77b55a 5%, #72b352 100%);
+	background:-o-linear-gradient(top, #77b55a 5%, #72b352 100%);
+	background:-ms-linear-gradient(top, #77b55a 5%, #72b352 100%);
+	background:linear-gradient(to bottom, #77b55a 5%, #72b352 100%);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#77b55a', endColorstr='#72b352',GradientType=0);
+	background-color:#77b55a;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	border-radius:4px;
+	border:1px solid #4b8f29;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:19px;
+	font-weight:bold;
+	padding:11px 20px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #5b8a3c;
+}
+
+.gamePanel button:hover {
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #72b352), color-stop(1, #77b55a));
+	background:-moz-linear-gradient(top, #72b352 5%, #77b55a 100%);
+	background:-webkit-linear-gradient(top, #72b352 5%, #77b55a 100%);
+	background:-o-linear-gradient(top, #72b352 5%, #77b55a 100%);
+	background:-ms-linear-gradient(top, #72b352 5%, #77b55a 100%);
+	background:linear-gradient(to bottom, #72b352 5%, #77b55a 100%);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#72b352', endColorstr='#77b55a',GradientType=0);
+	background-color:#72b352;
+}
+
+.gamePanel button:active {
+	position:relative;
+	top:1px;
 }

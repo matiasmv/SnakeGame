@@ -8,12 +8,17 @@
 
 <body>
 
-  <div>
-      <button id="NewGameButton">New Game</button>
+  <div class="gamePanel">
+      <button id="newGameButton">New Game</button>
+      <button id="graphicToggle">Graphics <span>ON</span></button>
   </div>
   <div class="board">
 
-    <div class="gameOverMessage">
+    <div class="gameOverMessage alignCenter">
+        <h2>Game over</h2>
+        <div class="alignCenter">
+            <img src="asserts/snakeHeadDead.png" alt="Game over" />
+        </div>
     </div>
   </div>
   <script src="bower_components/jquery/dist/jquery.js"></script>

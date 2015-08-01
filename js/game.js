@@ -10,24 +10,42 @@ function Snake() {
 
   var blockCount = 0;
   var self = this;
+  var isGraphicsActivated = true;
+  //public
+  this.init = init;
+  this.start = start;
+  this.grow = addSnakeBlock;
+  this.draw = drawSnake;
+  this.move = moveSnake;
+  this.colitionItselfCallback = function(){};
+  this.isSnakeColitionWith = isSnakeColitionWith;
   this.initialBodyLength;
   this.board = null;
   this.body = [];
   this.lastDirection = null;
   this.lastHeadDirection = null;
+  this.enableGraphics = enableGraphics;
 
   var temp = 0; //TODO: remove this.
+
+  function getTop(element){
+    return Number(element.css("top").replace("px", ""));
+  }
+
+  function getLeft(element){
+    return Number(element.css("left").replace("px", ""));
+  }
 
   function isSnakeColitionWith(elementTop, elementLeft, elementHeight, elementWidth){
     var colition;
     var head = getHead();
-    var headTop = head.offset().top;
-    var headLeft = head.offset().left;
+    var headTop = getTop(head);
+    var headLeft = getLeft(head);
     var width = head.outerWidth(true);
     var height = head.outerHeight(true);
 
-    colition =  Math.abs(headTop - elementTop) < Math.max(height, elementHeight) &&
-                Math.abs(headLeft - elementLeft) < Math.max(width, elementWidth);
+    colition =  Math.abs(headTop - elementTop) <= Math.max(height, elementHeight) &&
+                Math.abs(headLeft - elementLeft) <= Math.max(width, elementWidth);
 
     return colition;
   }
@@ -93,12 +111,69 @@ function Snake() {
      }
   }
 
+  function rotateBlock(block, deg, zindex){
+     block.css({
+       "-ms-transform": "rotate("+deg+"deg)", /* IE 9 */
+       "-webkit-transform": "rotate("+deg+"deg)", /* Safari */
+       "transform": "rotate("+deg+"deg)",
+       "z-index": zindex
+     });
+
+  }
+
+  function addSnakeGraphics(snakeBlock){
+    var graphic = $("<div>");
+    var prevTail;
+    var prevTailGraphic;
+
+    if(self.body.length == 0){
+        graphic.addClass("snakeHead")
+    }
+    else{
+      prevTail = getTail();
+      prevTailGraphic = prevTail.find("div.snakeTail");
+
+      if( prevTailGraphic.hasClass("snakeTail") ){
+        prevTailGraphic.removeClass("snakeTail").addClass("snakeBody");
+      }
+
+      graphic.addClass("snakeTail");
+    }
+
+    snakeBlock.append(graphic);
+  }
+
+  function enableGraphics(turnOn){
+    isGraphicsActivated = turnOn;
+
+    for (var i = 0; i < self.body.length; i++) {
+      toggleSnakeGraphics(self.body[i]);
+    }
+  }
+
+  function toggleSnakeGraphics(block){
+
+    block.find("div").css({
+      display: isGraphicsActivated ? "block" : "none"
+    });
+
+    if(isGraphicsActivated){
+       block.removeClass("snakeBlockNoGraphics");
+    }
+    else{
+      block.addClass("snakeBlockNoGraphics");
+    }
+
+  }
+
   function addSnakeBlock(){
 
     console.log("New block was added to snake!!");
-
-    var snakeBlock = $("<div>").attr({id:blockCount}).addClass("snakeBlock");
     blockCount++;
+    var snakeBlock = $("<div>").attr({id:blockCount}).addClass("snakeBlock");
+
+    addSnakeGraphics(snakeBlock);
+    toggleSnakeGraphics(snakeBlock);
 
     self.board.append(snakeBlock);
 
@@ -125,8 +200,8 @@ function Snake() {
 
         direction = getDirection(tailTop, tailLeft);
 
-        blockTop = tailTop + (-1) * getTopMovement(direction, tail.outerHeight(true));
-        blockLeft = tailLeft + (-1) * getLeftMovement(direction, tail.outerWidth(true));
+        blockTop = tailTop + (-1) * getTopMovement(direction, block.outerHeight(true));
+        blockLeft = tailLeft + (-1) * getLeftMovement(direction, block.outerWidth(true));
 
         setPosition(block, blockTop, blockLeft);
 
@@ -201,7 +276,8 @@ function Snake() {
     }
 
     //move head
-    var head = self.body[0];
+    var head = getHead();
+    var tail = getTail();
     var top = head.offset().top;
     var left = head.offset().left;
     var topMovement;
@@ -233,6 +309,12 @@ function Snake() {
             var partLeft = part.offset().left;
 
             setPosition(part, top, left);
+
+            rotateBlock(part, 0 ,20);
+            if(head !== tail && part == tail){
+              var direction = getDirection(top, left);
+              rotateBlock(part, (direction - 4) * 90, 10 );
+            }
 
             top = partTop;
             left = partLeft;
@@ -274,42 +356,80 @@ function Snake() {
       }
   }
 
-  //public
-  this.init = init;
-  this.start = start;
-  this.grow = addSnakeBlock;
-  this.draw = drawSnake;
-  this.move = moveSnake;
-  this.colitionItselfCallback = function(){};
-  this.isSnakeColitionWith = isSnakeColitionWith;
-
 };
 
-function Fruit(board, boardSize){
-
+function Fruit(board, boardWidth, boardHeight){
+    var self = this;
+    var isGraphicsActivated = true;
     this.board = board;
-    this.body = $("<div>").addClass("fruit");
-    this.top = getRandomValue(boardSize);
-    this.left = getRandomValue(boardSize);
-    this.width = this.body.outerWidth(true);
-    this.height = this.body.outerHeight(true);
+    this.body = $("<div>").addClass("fruitBlock");
+    this.boardWidth = boardWidth;
+    this.boardHeight = boardHeight;
     this.remove = remove;
     this.draw = draw;
+    this.enableGraphics = enableGraphics;
+    this.setPositionRelativeToBoard = setPositionRelativeToBoard;
+
+    function setPositionRelativeToBoard(){
+
+      this.top = getRandomValue(boardHeight);
+      this.left = getRandomValue(boardWidth);
+
+      while(this.top + this.height > this.boardHeight){
+        console.log("Bad top position!!");
+        this.top = getRandomValue(boardHeight);
+      }
+
+      while(this.left + this.width > this.boardWidth){
+        console.log("Bad left position!!");
+        this.left = getRandomValue(boardWidth);
+      }
+
+      this.body.css({
+        top: this.top+"px",
+        left: this.left+"px"
+      });
+
+      this.width = this.body.outerWidth(true);
+      this.height = this.body.outerHeight(true);
+
+    }
 
     function draw(){
       board.append(this.body);
-      this.body.offset({
-        top: this.top,
-        left: this.left
+
+
+      drawFruitGraphics(this.body)
+    }
+
+    function drawFruitGraphics(body){
+      var randomFruitNumber = getRandomValue(4);
+      var graphic = $("<div>");
+      body.append(graphic);
+      graphic.addClass("fruit"+randomFruitNumber);
+
+      enableGraphics(isGraphicsActivated);
+    }
+
+    function enableGraphics(turnOn){
+      self.body.find("div").css({
+        display: turnOn ? "block" : "none"
       });
+
+      if(turnOn){
+          self.body.removeClass("fruitNoGraphics");
+      }
+      else{
+          self.body.addClass("fruitNoGraphics");
+      }
     }
 
     function remove(){
         this.body.remove();
     }
 
-    function getRandomValue(boardSize){
-       return Math.floor(Math.random() * boardSize) + 1
+    function getRandomValue(number){
+       return Math.floor(Math.random() * number) + 1
     }
 }
 
@@ -319,16 +439,18 @@ var game = (function(){
   var selectors={
     board: '.board',
     gameOverMessage: ".gameOverMessage",
-    newGameButton: "#NewGameButton",
+    newGameButton: "#newGameButton",
+    graphicToggleButton: "#graphicToggle"
   };
 
+  var isGraphicsActivated = true;
   var speed = 100;
   var snake = new Snake();
   var board = $(selectors.board);
-  var boardSize = board.outerWidth(true);
+  var boardWidth = board.width();
+  var boardHeight = board.height()
   var gameLoop;
   var lastFruit = null;
-
 
   function init(config){
     console.log("Starting game");
@@ -338,6 +460,18 @@ var game = (function(){
     snake.init(config);
 
     $(selectors.newGameButton).click(startNewGame);
+    $(selectors.graphicToggleButton).click(toggleGraphics)
+  }
+
+  function toggleGraphics(){
+      isGraphicsActivated = !isGraphicsActivated;
+
+      snake.enableGraphics(isGraphicsActivated);
+      if(lastFruit) {
+        lastFruit.enableGraphics(isGraphicsActivated);
+      }
+
+      $(selectors.graphicToggleButton).find("span").text( isGraphicsActivated ? "ON" : "OFF");
   }
 
   function endGame(){
@@ -346,10 +480,23 @@ var game = (function(){
   }
 
   function startNewGame(){
-      lastFruit = new Fruit(board, boardSize);
-      lastFruit.draw();
       hideGameOverMensage();
       startGameLoop();
+      addNewFruit(); // add the first fruit after the game loop start
+  }
+
+  function addNewFruit(){
+
+    if(lastFruit){
+      lastFruit.remove();
+    }
+
+    lastFruit = new Fruit(board, boardWidth, boardHeight);
+    lastFruit.draw();
+    lastFruit.setPositionRelativeToBoard();
+    while(snake.isSnakeColitionWith(lastFruit.top, lastFruit.left, lastFruit.height, lastFruit.width)){
+      lastFruit.setPositionRelativeToBoard();
+    }
   }
 
   function hideGameOverMensage(){
@@ -378,10 +525,8 @@ var game = (function(){
        snake.move();
 
        if(snake.isSnakeColitionWith(lastFruit.top, lastFruit.left, lastFruit.height, lastFruit.width)){
-          lastFruit.remove();
-          lastFruit = new Fruit(board, boardSize);
-          lastFruit.draw();
-          snake.grow();
+         snake.grow();
+         addNewFruit();
        }
 
      }, speed);
@@ -397,7 +542,6 @@ var game = (function(){
 $(document).ready(function(){
   game.init({
     initialTop: 300,
-    initialLeft: 200,
-
+    initialLeft: 200
   });
 });
