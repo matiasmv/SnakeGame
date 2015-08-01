@@ -44,6 +44,7 @@
   z-index: 50;
   top:-40%;
   left:-50%;
+  animation: snakeAnimation 2s infinite;
 }
 
 .snakeBlockNoGraphics{
@@ -74,31 +75,31 @@
   height: 50px;
 }
 
-@-webkit-keyframes fruitAnimation {
-  0%   {
-      transform: scale(1.0);
+@-webkit-keyframes snakeAnimation {
+  0%  {transform: scale(1.0);}
+  50%  {transform: scale(1.1);}
+  100% {transform: scale(1.0);}
+}
 
-  }
-  50%  {
-    transform: scale(1.4);
-  }
-  100% {
-    transform: scale(1.0);
-  }
+/* Standard syntax */
+@keyframes snakeAnimation {
+  0%   {transform: scale(1.0); }
+  50%  {transform: scale(1.1);}
+  100% {transform: scale(1.0);}
+}
+
+
+@-webkit-keyframes fruitAnimation {
+  0%  {transform: scale(1.0);}
+  50%  {transform: scale(1.4);}
+  100% {transform: scale(1.0);}
 }
 
 /* Standard syntax */
 @keyframes fruitAnimation {
-  0%   {
-      transform: scale(1.0);
-
-  }
-  50%  {
-    transform: scale(1.4);
-  }
-  100% {
-    transform: scale(1.0);
-  }
+  0%   {transform: scale(1.0); }
+  50%  {transform: scale(1.4);}
+  100% {transform: scale(1.0);}
 }
 
 .fruit1{

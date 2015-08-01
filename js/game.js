@@ -17,7 +17,6 @@ function Snake() {
   this.grow = addSnakeBlock;
   this.draw = drawSnake;
   this.move = moveSnake;
-  this.colitionItselfCallback = function(){};
   this.isSnakeColitionWith = isSnakeColitionWith;
   this.initialBodyLength;
   this.board = null;
@@ -25,6 +24,8 @@ function Snake() {
   this.lastDirection = null;
   this.lastHeadDirection = null;
   this.enableGraphics = enableGraphics;
+  this.checkColitionsWithBoard = checkColitionsWithBoard;
+  this.checkColitionsItself = checkColitionsItself;
 
   var temp = 0; //TODO: remove this.
 
@@ -36,6 +37,7 @@ function Snake() {
     return Number(element.css("left").replace("px", ""));
   }
 
+  //Colitions
   function isSnakeColitionWith(elementTop, elementLeft, elementHeight, elementWidth){
     var colition;
     var head = getHead();
@@ -50,7 +52,23 @@ function Snake() {
     return colition;
   }
 
-  function checkColitionsItself(){
+  function checkColitionsWithBoard(outOfBoardCallback){
+    var head = getHead();
+    var headTop = getTop(head);
+    var headLeft = getLeft(head);
+    var boardWidth = self.board.outerWidth(true);
+    var boardHeight = self.board.outerHeight(true);
+
+    var colition = headTop < 0 || headLeft < 0 ||
+                    boardWidth < headLeft + head.outerWidth(true) ||
+                    boardHeight < headTop + head.outerHeight(true);
+
+    if(colition && outOfBoardCallback){
+       outOfBoardCallback();
+    }
+  }
+
+  function checkColitionsItself(colitionItselfCallback){
     var colition = false;
     var head = getHead();
     var headTop = head.offset().top;
@@ -74,8 +92,8 @@ function Snake() {
       i++;
     }
 
-    if(colition && self.colitionItselfCallback ){
-      self.colitionItselfCallback();
+    if(colition && colitionItselfCallback ){
+      colitionItselfCallback();
     }
 
   }
@@ -134,10 +152,13 @@ function Snake() {
       prevTailGraphic = prevTail.find("div.snakeTail");
 
       if( prevTailGraphic.hasClass("snakeTail") ){
+        console.log("Entro a este if?");
         prevTailGraphic.removeClass("snakeTail").addClass("snakeBody");
+        rotateBlock(prevTail, 0 ,20); //obtener esto de otro lado.
       }
 
       graphic.addClass("snakeTail");
+      rotateTail(snakeBlock, getTop(snakeBlock), getLeft(snakeBlock));
     }
 
     snakeBlock.append(graphic);
@@ -204,14 +225,11 @@ function Snake() {
         blockLeft = tailLeft + (-1) * getLeftMovement(direction, block.outerWidth(true));
 
         setPosition(block, blockTop, blockLeft);
-
       }
   }
 
   function setPosition(element, top, left){
-
     element.offset({ top: top, left: left });
-
   }
 
   function getDirection(e1Top, e1Left, e2Top, e2Left){
@@ -268,61 +286,77 @@ function Snake() {
     }
   }
 
-  function moveSnake(){
-    console.log("Snake moving...");
-
-    if(!self.lastDirection){
-      return;
-    }
-
-    //move head
+  function changeHeadChangeDirection(){
     var head = getHead();
     var tail = getTail();
     var top = head.offset().top;
     var left = head.offset().left;
     var topMovement;
     var leftMovement;
-
+    var prevElement = self.body[self.body.length -1];
     var topIncrement = head.outerHeight(true);
     var leftIncrement = head.outerWidth(true);
+
+    topIncrement = prevElement.offset().top +  getTopMovement(self.lastDirection, topIncrement);
+    leftIncrement = prevElement.offset().left + getLeftMovement(self.lastDirection, leftIncrement);
+    setPosition(head, topMovement, leftMovement);
+    self.lastHeadDirection = self.lastDirection;
+
+  }
+
+  function rotateTail(tail, top, left){
+    var direction = getDirection(top, left);
+    rotateBlock(tail, (direction - 4) * 90, 10);
+  }
+
+  function moveSnakeSameDirection(){
+    var head = getHead();
+    var tail = getTail();
+    var top = head.offset().top;
+    var left = head.offset().left;
+    var topMovement;
+    var leftMovement;
+    var prevElement = self.body[self.body.length -1];
+    var topIncrement = head.outerHeight(true);
+    var leftIncrement = head.outerWidth(true);
+    topMovement = top + getTopMovement(self.lastDirection, topIncrement);
+    leftMovement = left + getLeftMovement(self.lastDirection, leftIncrement);
+
+    setPosition(head, topMovement, leftMovement);
+
+    //Move body
+    for (var i = 1; i < self.body.length; i++) {
+        var part = self.body[i];
+        var partTop = part.offset().top;
+        var partLeft = part.offset().left;
+
+        setPosition(part, top, left);
+
+        rotateBlock(part, 0 ,20);
+        if(head !== tail && part == tail){
+          rotateTail(part, top, left);
+        }
+
+        top = partTop;
+        left = partLeft;
+    }
+
+  }
+
+  function moveSnake(){
+
+    if(!self.lastDirection){
+      return;
+    }
 
     self.lastDirection = Math.abs(self.lastDirection - self.lastHeadDirection) == 2 ? self.lastHeadDirection : self.lastDirection;
 
     if(isDirectionChanged()){
-      var prevElement = self.body[self.body.length -1];
-
-      topIncrement = prevElement.offset().top +  getTopMovement(self.lastDirection, topIncrement);
-      leftIncrement = prevElement.offset().left + getLeftMovement(self.lastDirection, leftIncrement);
-      setPosition(head, topMovement, leftMovement);
-      self.lastHeadDirection = self.lastDirection;
+      changeHeadChangeDirection();
     }
     else{
-        topMovement = top + getTopMovement(self.lastDirection, topIncrement);
-        leftMovement = left + getLeftMovement(self.lastDirection, leftIncrement);
-
-        setPosition(head, topMovement, leftMovement);
-
-        //Move body
-        for (var i = 1; i < self.body.length; i++) {
-            var part = self.body[i];
-            var partTop = part.offset().top;
-            var partLeft = part.offset().left;
-
-            setPosition(part, top, left);
-
-            rotateBlock(part, 0 ,20);
-            if(head !== tail && part == tail){
-              var direction = getDirection(top, left);
-              rotateBlock(part, (direction - 4) * 90, 10 );
-            }
-
-            top = partTop;
-            left = partLeft;
-        }
+      moveSnakeSameDirection();
     }
-
-    checkColitionsItself();
-
   }
 
   function isDirectionChanged(){
@@ -374,6 +408,8 @@ function Fruit(board, boardWidth, boardHeight){
 
       this.top = getRandomValue(boardHeight);
       this.left = getRandomValue(boardWidth);
+      this.width = this.body.outerWidth(true);
+      this.height = this.body.outerHeight(true);
 
       while(this.top + this.height > this.boardHeight){
         console.log("Bad top position!!");
@@ -389,9 +425,6 @@ function Fruit(board, boardWidth, boardHeight){
         top: this.top+"px",
         left: this.left+"px"
       });
-
-      this.width = this.body.outerWidth(true);
-      this.height = this.body.outerHeight(true);
 
     }
 
@@ -456,7 +489,6 @@ var game = (function(){
     console.log("Starting game");
 
     config.board = board;
-    config.colitionItselfCallback = endGame;
     snake.init(config);
 
     $(selectors.newGameButton).click(startNewGame);
@@ -506,7 +538,7 @@ var game = (function(){
 
   function showGameOverMensage(){
       var  gameOverMessage = $(selectors.gameOverMessage);
-      gameOverMessage.css({display: "block"})
+      gameOverMessage.show("medium");
   }
 
   function stopGameLoop(){
@@ -523,12 +555,13 @@ var game = (function(){
      gameLoop = setInterval(function(){
 
        snake.move();
+       snake.checkColitionsWithBoard(endGame);
+       snake.checkColitionsItself(endGame);
 
        if(snake.isSnakeColitionWith(lastFruit.top, lastFruit.left, lastFruit.height, lastFruit.width)){
          snake.grow();
          addNewFruit();
        }
-
      }, speed);
    }
 
