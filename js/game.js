@@ -26,8 +26,13 @@ function Game(){
     snake = new Snake(board);
     snake.init(config);
 
+    wireup();
+  }
+
+  function wireup(){
     $(selectors.newGameButton).click(startNewGame);
-    $(selectors.graphicToggleButton).click(toggleGraphics)
+    $(selectors.graphicToggleButton).click(toggleGraphics);
+    $(selectors.shareButton).click(shareOnFacebook);
   }
 
   function toggleGraphics(){

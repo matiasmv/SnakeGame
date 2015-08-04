@@ -16,12 +16,12 @@ function Fruit(board, boardWidth, boardHeight){
       this.height = this.body.outerHeight(true);
 
       while(this.top + this.height > boardHeight){
-        console.log("Bad top position!!");
+        console.log("Recalculating a new top for Fuit");
         this.top = getRandomValue(boardHeight);
       }
 
       while(this.left + this.width > boardWidth){
-        console.log("Bad left position!!");
+        console.log("Recalculating a new left for Fuit");
         this.left = getRandomValue(boardWidth);
       }
 

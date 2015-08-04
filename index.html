@@ -1,33 +1,59 @@
 <html>
 <head>
     <link rel="stylesheet" href="css/game.css">
+    <link rel="icon" href="favicon.ico" type="image/gif" sizes="16x16">
 </head>
 
 <body>
 
-  <div class="gamePanel">
-    <div class="buttonSection">
-      <button id="newGameButton">New Game</button>
-      <button id="graphicToggle">Graphics <span>ON</span></button>
-    </div>
-    <div class="scoreSection">
-        <span id="score">0</span>
-    </div>
-  </div>
-  <div class="board">
+  <script>
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId      : '1458580917800817',
+        xfbml      : true,
+        version    : 'v2.4'
+      });
+    };
+      (function(d, s, id){
+         var js, fjs = d.getElementsByTagName(s)[0];
+         if (d.getElementById(id)) {return;}
+         js = d.createElement(s); js.id = id;
+         js.src = "//connect.facebook.net/en_US/sdk.js";
+         fjs.parentNode.insertBefore(js, fjs);
+       }(document, 'script', 'facebook-jssdk'));
 
-    <div class="gameOverMessage alignCenter">
-        <h2>Game over</h2>
-        <div class="alignCenter">
-            <img src="asserts/snakeHeadDead.png" alt="Game over" />
-        </div>
-        <div class="alignCenter">
-            <button>Share on Facebook!!</button>
-        </div>
+  </script>
+
+  <div class="game alignCenter">
+
+    <div class="gamePanel">
+      <div class="buttonSection">
+        <button id="newGameButton">New Game</button>
+        <button id="graphicToggle">Graphics <span>ON</span></button>
+      </div>
+
+      <div class="scoreSection">
+          <span id="score">0</span>
+      </div>
+    </div>
+    <div class="board">
+
+      <div class="gameOverMessage alignCenter">
+          <h2>Game over</h2>
+          <div class="alignCenter">
+              <img src="asserts/snakeHeadDead.png" alt="Game over" />
+          </div>
+      </div>
+
+    </div>
+    <div
+        class="fb-like"
+        data-share="true"
+        data-width="450"
+        data-show-faces="true">
     </div>
 
-  </div>
-
+  <div>
   <script src="bower_components/jquery/dist/jquery.js"></script>
   <script src="js/snake.js"></script>
   <script src="js/fruit.js"></script>
