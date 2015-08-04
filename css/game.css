@@ -7,6 +7,20 @@
   background-image: url("../asserts/ground.jpg");
 }
 
+.gamePanel{
+  margin:10px;
+  width: 800px;
+  height: 45px
+}
+
+.buttonSection{
+  float:left;
+}
+.scoreSection{
+  float:right;
+  margin-right: 60px;
+  font-size: 30px
+}
 .snakeBody{
   position: absolute;
   background-color: green;
@@ -167,9 +181,7 @@
   text-align: center;
 }
 
-.gamePanel{
-  margin:10px;
-}
+
 
 .gamePanel button{
 	-moz-box-shadow: 0px 10px 14px -7px #3e7327;
