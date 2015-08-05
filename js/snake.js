@@ -15,15 +15,14 @@ function Snake(board) {
   this.start = start;
   this.grow = addSnakeBlock;
   this.move = moveSnake;
-  this.isSnakeColitionWith = isSnakeColitionWith;
-  this.initialBodyLength;
-
   this.body = [];
   this.lastDirection = null;
   this.lastHeadDirection = null;
   this.enableGraphics = enableGraphics;
   this.checkColitionsWithBoard = checkColitionsWithBoard;
   this.checkColitionsItself = checkColitionsItself;
+  this.isHeadColitionWith = isSnakePartColitionWith.bind(this, function(){return 0;});
+  this.isColitionWith = isSnakePartColitionWith.bind(this, getSnakeLength.bind(this));
 
   var temp = 0; //TODO: remove this.
 
@@ -35,17 +34,27 @@ function Snake(board) {
     return Number(element.css("left").replace("px", ""));
   }
 
-  //Colitions
-  function isSnakeColitionWith(elementTop, elementLeft, elementHeight, elementWidth){
-    var colition;
-    var head = getHead();
-    var headTop = getTop(head);
-    var headLeft = getLeft(head);
-    var width = head.outerWidth(true);
-    var height = head.outerHeight(true);
+  function getSnakeLength(){
+    return this.body.length;
+  }
 
-    colition =  Math.abs(headTop - elementTop) <= Math.max(height, elementHeight) &&
-                Math.abs(headLeft - elementLeft) <= Math.max(width, elementWidth);
+  //Colitions
+  function isSnakePartColitionWith(getSnakeLength, elementTop, elementLeft, elementHeight, elementWidth){
+    var colition;
+    var i = 0;
+    while(!colition && i < this.body.length){
+
+      var part = this.body[i];
+      var partTop = getTop(part);
+      var partLeft = getLeft(part);
+      var width = part.outerWidth(true);
+      var height = part.outerHeight(true);
+
+      colition =  Math.abs(partTop - elementTop) <= Math.max(height, elementHeight) &&
+                  Math.abs(partLeft - elementLeft) <= Math.max(width, elementWidth);
+
+      i++;
+    }
 
     return colition;
   }

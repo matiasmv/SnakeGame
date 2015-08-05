@@ -32,7 +32,6 @@ function Game(){
   function wireup(){
     $(selectors.newGameButton).click(startNewGame);
     $(selectors.graphicToggleButton).click(toggleGraphics);
-    $(selectors.shareButton).click(shareOnFacebook);
   }
 
   function toggleGraphics(){
@@ -74,7 +73,7 @@ function Game(){
     lastFruit.draw(isGraphicsActivated);
     lastFruit.setPositionRelativeToBoard();
 
-    while(snake.isSnakeColitionWith(lastFruit.top, lastFruit.left, lastFruit.height, lastFruit.width)){
+    while(snake.isColitionWith(lastFruit.top, lastFruit.left, lastFruit.height, lastFruit.width)){
       lastFruit.setPositionRelativeToBoard();
     }
   }
@@ -106,7 +105,7 @@ function Game(){
        snake.checkColitionsWithBoard(endGame);
        snake.checkColitionsItself(endGame);
 
-       if(snake.isSnakeColitionWith(lastFruit.top, lastFruit.left, lastFruit.height, lastFruit.width)){
+       if(snake.isHeadColitionWith(lastFruit.top, lastFruit.left, lastFruit.height, lastFruit.width)){
          snake.grow();
          addNewFruit();
          score++;
