@@ -381,18 +381,16 @@ function Snake(board) {
         // direction 1 - left, 2-top, 3-right, 4-bottom
          key = key - 36;
          if(self.lastDirection == null){
-
            self.lastDirection = key;
            self.lastDirection = isDirectionValid() ? self.lastDirection : null;
 
-         }else if(self.lastDirection != self.lastHeadDirection){
-            // don't change direction util self.lastDirection === self.lastHeadDirection
-         }
-         else{
+         }else if(self.lastDirection == self.lastHeadDirection){
             self.lastDirection = key;
          }
 
-         self.move();
+         if(isDirectionValid() &&  self.lastDirection != self.lastHeadDirection){
+            self.move();
+         }
       }
   }
 
